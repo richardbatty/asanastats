@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+find . -name "*-test.js" | xargs ./node_modules/mocha/bin/mocha --debug ./test/_helper.js
