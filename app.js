@@ -47,13 +47,6 @@ Function.prototype.partial = function(){
     };
   };
 
-Function.prototype.dummy = function() {
-  console.log("this is a dummy function");
-};
-
-function makeAuth(username, password) {
-  return username + ':' + password;
-}
 
 function getHTTPSResponseFromAPI(hostname, path, auth, callback) {
   var options = {
@@ -67,21 +60,10 @@ function getHTTPSResponseFromAPI(hostname, path, auth, callback) {
       }
     , req = https.request(options, callback);
   req.end();
-  req.on('error', errorHandler);
+  req.on('error', function(err) {
+    console.log(err);
+  });
 }
-
-// Takes path, auth, and callback
-getAsanaResponse = getHTTPSResponseFromAPI.partial('app.asana.com', undefined, undefined, undefined);
-
-function errorHandler(err) {
-  console.log(err);
-}
-
-// Takes callback
-processResponseAndDisplayData = processResponse.partial(undefined, displayData);
-
-// Takes path and auth
-getAsanaResponseAndDisplayStatusCode = getAsanaResponse.partial(undefined, undefined, displayStatusCode)
 
 function processResponse(res, callback) {
   console.log("inside processResponse");
@@ -90,35 +72,31 @@ function processResponse(res, callback) {
   console.log("statusCode: ", res.statusCode);
   console.log("headers: ", res.headers);
   res.on('data', function(chunk) {
-    console.log("Inside res.on data");
     data += chunk.toString('utf-8');
-    console.log(data);
   });
   res.on('end', function() {
-    console.log("HELLOEOE");
     callback(data);
   });
-}
-
-function displayStatusCode(res) {
-  console.log("Statuscode " + res.statusCode);
 }
 
 function displayData(data) {
   console.log("Data recieved: " + data);
 }
 
+// Takes path, auth, and callback
+getAsanaResponse = getHTTPSResponseFromAPI.partial('app.asana.com', undefined, undefined, undefined);
+
+// Takes callback
+processResponseAndDisplayData = processResponse.partial(undefined, displayData);
+
 app.get('/', routes.index);
 app.get('/users', user.list);
 
 // getAsanaResponse('/api/1.0/users/me', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:',  processResponseAndDisplayData);
-// getAsanaResponseAndDisplayStatusCode('/api/1.0/users/me', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
-console.log(global.toString);
 
 module.exports.app = app;
 module.exports.getHTTPSResponseFromAPI = getHTTPSResponseFromAPI;

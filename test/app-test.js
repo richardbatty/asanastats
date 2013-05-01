@@ -36,14 +36,17 @@ describe('processResponse', function() {
     });
     });
   });
-  it('should have content type of json', function(done) {
+  it('data should not contain errors', function(done) {
+    should.not.exist(data["errors"]);
+    done();
+  })
+  it('data should have content type of json', function(done) {
     res.should.be.json;
     done();
   })
-  it('should return data in JSON format', function(done) {
+  it('data should be in parseable JSON format', function(done) {
     // JSON.parse throws a syntax error if data isn't in JSON format
     JSON.parse(data);
     done();
   });
 });
-
