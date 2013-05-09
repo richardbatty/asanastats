@@ -16,7 +16,10 @@ var Workspace = Backbone.Router.extend({
   },
 
   projects: function() {
-    console.log("finding porjects");
+    console.log("Inside projects initialiser");
+    projects = new app.Projects();
+    projects.fetch();
+    console.log("finding projects");
   }
 })
 
