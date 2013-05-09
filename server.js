@@ -104,9 +104,6 @@ function createJSONResponder(res) {
 }
 
 
-function logResponse(res) {
-  console.log("REsponse: " + res);
-}
 // REST api
 app.get('/:path', function(req, res) {
   // bind the JSON function to res, so that when it is passed,
@@ -211,9 +208,7 @@ app.get('/stories/:id', function(req, res) {
 
 
 app.get('/', function(req, res){
-  res.render('index', {
-    title: 'Home'
-  });
+  res.sendfile('./public/static/index.html')
 });
 
 
