@@ -1,5 +1,6 @@
 var should = require('should')
-  , app = require('../app');
+  , app = require('../server')
+  , asana_api = require('../asana_api');
 
 
 
@@ -11,7 +12,7 @@ describe('getHTTPResponseFromAPI', function() {
     ;
 
   it('should send a 200 status code', function(done) {
-    app.getHTTPSResponseFromAPI(hostname, path, auth, function(res) {
+    asana_api.getHTTPSResponseFromAPI(hostname, path, auth, function(res) {
       // console.log(res);
       res.should.have.status(200);
       done();
@@ -28,8 +29,8 @@ describe('processResponse', function() {
     , path = '/api/1.0/users/me'
     , auth = 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:'
     ;
-    app.getHTTPSResponseFromAPI(hostname, path, auth, function(_res) {
-      app.processResponse(_res, function(_data) {
+    asana_api.getHTTPSResponseFromAPI(hostname, path, auth, function(_res) {
+      asana_api.processResponse(_res, function(_data) {
         res = _res
         data = _data;
         done();
