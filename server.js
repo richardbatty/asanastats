@@ -13,7 +13,6 @@ var express = require('express')
   , _ = require('underscore')
   , mongojs = require('mongojs')
   , db = mongojs('mydb', ['users'])
-  , asana_api = require('./asana_api');
   ;
 
 var app = express();
@@ -52,52 +51,93 @@ Function.prototype.partial = function(){
 
 
 
-function logResponse(res) {
-  console.log("REsponse: " + res);
+var User = function User(data) {
+  this.id = data.id,
+  this.name = data.name, 
+  this.email = data.email,
+  this.workspaces = data.workspaces
 }
-// REST api
+
+function getAPIResponse(path, auth, callback) {
+  // Takes a paht from app.asana.com and a callback that operates
+  // on one data argument where the data is in JSON format.
+  console.log(path);
+  var options = {
+        hostname: 'app.asana.com',
+        path: path,
+        method: 'GET',
+        // Note that the auth variable is automatically converted into base64
+        // If you convert it before assigning it to auth then it'll get 
+        // encoded twice and so will not work
+        auth: auth
+      }
+    , req = https.request(options, callback);
+  req.end();
+  req.on('error', function(err) {
+    console.log(err);
+  });
+}
+
+function processResponse(asana_response, callback) {
+  // Takes a response from asana, and a callback that operates
+  // on the data returned from asana in JSON format.
+  var data = '';
+  asana_response.on('data', function(chunk) {
+    data += chunk.toString('utf-8');
+  });
+  asana_response.on('end', function() {
+    // convert JSON string to JSON
+    json_data = JSON.parse(data);
+    callback(json_data);
+  });
+}
 
 function createJSONResponder(res) {
   // Takes a response object, binds res.json to the responder object.
-  // Then it partially applies asana_api.process response with the
+  // Then it partially applies processResponse with the
   // bound res.json as a callback. In this way, a response from the asana api
   // can be passed to JSONResponder and the function will write out
   // a response to the client with the JSON data.
   bound_res_JSON = _.bind(res.json, res);
-  JSONResponder = asana_api.processResponse.partial(undefined, bound_res_JSON)
+  JSONResponder = processResponse.partial(undefined, bound_res_JSON)
   return JSONResponder;
 }
 
+
+function logResponse(res) {
+  console.log("REsponse: " + res);
+}
+// REST api
 app.get('/:path', function(req, res) {
   // bind the JSON function to res, so that when it is passed,
   // the JSON function is called in the right context
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tags/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tags/:id/tasks', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tags/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tags/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/users/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/users/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/users/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/workspaces/:id/users', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/users', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/users', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/workspaces/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/workspaces/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/workspaces/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/workspaces/:id/tasks', function(req, res) {
@@ -111,63 +151,64 @@ app.get('/workspaces/:id/tasks', function(req, res) {
   // filter by workspace.""
   // "So your choices for filtering tasks are either by project or by BOTH assignee and workspace.""
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/workspaces/:id/tags', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/workspaces/:id/projects', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/projects/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/projects/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/projects/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/projects/:id/tasks', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/projects/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/projects/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/projects/:id/stories', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/projects/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/projects/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tasks/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tasks/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tasks/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tasks/:id/subtasks', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tasks/' + req.params.id + '/subtasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/subtasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tasks/:id/stories', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tasks/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tasks/:id/projects', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tasks/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tasks/:id/tags', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/tasks/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/stories/:id', function(req, res) {
   var JSONResponder = createJSONResponder(res);
-  asana_api.getAPIResponse('/api/1.0/stories/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  getAPIResponse('/api/1.0/stories/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
+
 
 app.get('/', function(req, res){
   res.render('index', {
@@ -221,7 +262,9 @@ http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
-module.exports.app = app;
+
+console.log("App in server.js: " + app);
+module.exports = app;
 
 
 
