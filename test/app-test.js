@@ -4,15 +4,13 @@ var should = require('should')
 
 
 
-describe('getHTTPResponseFromAPI', function() {
-  var hostname = 'app.asana.com'
-    , method = 'GET'
-    , path = '/api/1.0/users/me'
+describe('getAPIResponse', function() {
+  var path = '/api/1.0/users/me'
     , auth = 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:'
     ;
 
   it('should send a 200 status code', function(done) {
-    asana_api.getHTTPSResponseFromAPI(hostname, path, auth, function(res) {
+    asana_api.getAPIResponse(path, auth, function(res) {
       // console.log(res);
       res.should.have.status(200);
       done();
@@ -24,12 +22,11 @@ describe('processResponse', function() {
   var data = null
     , res = null;
   before(function(done) {
-    var hostname = 'app.asana.com'
-    , method = 'GET'
-    , path = '/api/1.0/users/me'
-    , auth = 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:'
-    ;
-    asana_api.getHTTPSResponseFromAPI(hostname, path, auth, function(_res) {
+    var path = '/api/1.0/users/me'
+      , auth = 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:'
+      ;
+      
+    asana_api.getAPIResponse(path, auth, function(_res) {
       asana_api.processResponse(_res, function(_data) {
         res = _res
         data = _data;

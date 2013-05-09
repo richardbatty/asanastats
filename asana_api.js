@@ -49,24 +49,30 @@ function getAPIResponse(path, auth, callback) {
         // encoded twice and so will not work
         auth: auth
       }
-    , req = https.request(options, function(asana_response) {
-        var data = '';
-        asana_response.on('data', function(chunk) {
-          data += chunk.toString('utf-8');
-        });
-        asana_response.on('end', function() {
-          // convert JSON string to JSON
-          json_data = JSON.parse(data);
-          callback(json_data);
-        });
-    });
+    , req = https.request(options, callback);
   req.end();
   req.on('error', function(err) {
     console.log(err);
   });
 }
 
+function processResponse(asana_response, callback) {
+  // Takes a response from asana, and a callback that operates
+  // on the data returned from asana in JSON format.
+  var data = '';
+  asana_response.on('data', function(chunk) {
+    data += chunk.toString('utf-8');
+  });
+  asana_response.on('end', function() {
+    // convert JSON string to JSON
+    json_data = JSON.parse(data);
+    callback(json_data);
+  });
+}
+
+
 module.exports.getAPIResponse = getAPIResponse;
+module.exports.processResponse = processResponse;
 
 // function processResponse(res, callback) {
 //   var data = '';
