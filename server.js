@@ -78,7 +78,7 @@ function getAPIResponse(path, auth, callback) {
   });
 }
 
-function processResponse(asana_response, callback) {
+function processResponse(asana_response, response) {
   // Takes a response from asana, and a callback that operates
   // on the data returned from asana in JSON format.
   var data = '';
@@ -92,7 +92,11 @@ function processResponse(asana_response, callback) {
     // refers to the data.
 
     //Need some error handling here - sometimes json_data.data will be "Error"
-    callback(json_data.data);
+    if (json_data["errors"] !== undefined) {
+      response.send(json_data);
+    } else {
+      response.json(json_data["data"]);
+    }
   });
 }
 
@@ -102,11 +106,10 @@ function createJSONResponder(res) {
   // bound res.json as a callback. In this way, a response from the asana api
   // can be passed to JSONResponder and the function will write out
   // a response to the client with the JSON data.
-  bound_res_JSON = _.bind(res.json, res);
-  JSONResponder = processResponse.partial(undefined, bound_res_JSON)
+  // bound_res_JSON = _.bind(res.json, res);
+  JSONResponder = processResponse.partial(undefined, res);
   return JSONResponder;
 }
-
 
 // REST api
 app.get('/:path', function(req, res) {
@@ -264,6 +267,8 @@ http.createServer(app).listen(app.get('port'), function(){
 
 console.log("App in server.js: " + app);
 module.exports = app;
+module.exports.getAPIResponse = getAPIResponse;
+module.exports.processResponse = processResponse;
 
 
 
