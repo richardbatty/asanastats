@@ -88,7 +88,11 @@ function processResponse(asana_response, callback) {
   asana_response.on('end', function() {
     // convert JSON string to JSON
     json_data = JSON.parse(data);
-    callback(json_data);
+    // Note that json_data.data is returned because asana api data always has a 'data' property which
+    // refers to the data.
+
+    //Need some error handling here - sometimes json_data.data will be "Error"
+    callback(json_data.data);
   });
 }
 

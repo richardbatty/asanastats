@@ -1,20 +1,17 @@
 var app = app || {};
 
 app.AppView = Backbone.View.extend({
-  el: '#items',
-
+  el: '#projects-list',
+  
   initialize: function() {
-    this.listenTo(items, 'add', this.addOne);
-    this.render();
+    this.listenTo(app.projects, 'reset', this.render)
   },
 
   render: function() {
-    this.$el.html('Test html');
-    return this;
-  },
-
-  addOne: function( item ) {
-    console.log("Inside addone");
+    var element = this.$el;
+    app.projects.each(function(project) {
+      var template = _.template($('#project-template').html(),  {name: project.get("name") });
+      element.append( template );
+    });
   }
-
 });
