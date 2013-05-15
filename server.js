@@ -36,13 +36,24 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-var DataGetter = function(options) {
-  var that = this 
-    , path = options.path
-    , auth = options.auth
-    , collection = options.collection
-    ;
+Function.prototype.partial = function(){
+    var fn = this 
+      , args = Array.prototype.slice.call(arguments);
+    return function(){
+      var arg = 0;
+      // Note that here 'arguments' refers to the arguments for the inner function
+      // It is a different set of arguments from one above that is turned into an array
+      // and assigned to 'args'
+      for ( var i = 0; i < args.length && arg < arguments.length; i++ )
+        if ( args[i] === undefined )
+          args[i] = arguments[arg++];
+      return fn.apply(this, args);
+    };
+  };
 
+var DataGetter = function() {
+  
+  var that = this;
 
   events.EventEmitter.call(this)
 
@@ -144,7 +155,7 @@ app.get('/:path', function(req, res) {
   // the JSON function is called in the right context
 
   var dataGetter = new DataGetter();
-  dataGetter.getData('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+  dataGetter.getAndSaveData('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
 
   // var JSONResponder = createJSONResponder(res);
   // getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
