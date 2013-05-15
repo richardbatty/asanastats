@@ -79,8 +79,9 @@ function getAPIResponse(path, auth, callback) {
 }
 
 function processResponse(asana_response, response) {
-  // Takes a response from asana, and a callback that operates
-  // on the data returned from asana in JSON format.
+  // Takes a response from asana, and a node server response object
+  // that has functions send() and json() which are called depending
+  // on whether or not there are errors from asana.
   var data = '';
   asana_response.on('data', function(chunk) {
     data += chunk.toString('utf-8');
