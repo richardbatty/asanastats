@@ -12,7 +12,9 @@ var express = require('express')
   , request = require('request')
   , _ = require('underscore')
   , mongojs = require('mongojs')
-  , db = mongojs('mydb', ['users'])
+  , db = mongojs('mydb', ['users', 'projects'])
+  , util = require('util')
+  , events = require('events')
   ;
 
 var app = express();
@@ -49,75 +51,117 @@ Function.prototype.partial = function(){
     };
   };
 
+var DataGetter = function() {
+  
+  var that = this;
 
+  events.EventEmitter.call(this)
 
-var User = function User(data) {
-  this.id = data.id,
-  this.name = data.name, 
-  this.email = data.email,
-  this.workspaces = data.workspaces
-}
+  this.getData = function(path, auth) {
+    that.emit("dataRequest", path, auth);
+  }
 
-function getAPIResponse(path, auth, callback) {
-  // Takes a paht from app.asana.com and a callback that operates
-  // on one data argument where the data is in JSON format.
-  console.log(path);
-  var options = {
-        hostname: 'app.asana.com',
-        path: path,
-        method: 'GET',
-        // Note that the auth variable is automatically converted into base64
-        // If you convert it before assigning it to auth then it'll get 
-        // encoded twice and so will not work
-        auth: auth
-      }
-    , req = https.request(options, callback);
-  req.end();
-  req.on('error', function(err) {
-    console.log(err);
-  });
-}
+  var getAPIResponse = function (path, auth) {
+    console.log("inside getAPIResponse");
+    // Takes a path for app.asana.com, an authorisation code, and a callback that operates
+    // on the asana response object.
+    var options = {
+          hostname: 'app.asana.com',
+          path: path,
+          method: 'GET',
+          // Note that the auth variable is automatically converted into base64
+          // If you convert it before assigning it to auth then it'll get 
+          // encoded twice and so will not work
+          auth: auth
+        }
+      , req = https.request(options, function(asana_response) {
+          console.log("inside https.request callback");
+          console.log(that);
+          that.emit("asanaResponse", asana_response)
+        });
 
-function processResponse(asana_response, response) {
-  // Takes a response from asana, and a node server response object
-  // that has functions send() and json() which are called depending
-  // on whether or not there are errors from asana.
-  var data = '';
-  asana_response.on('data', function(chunk) {
-    data += chunk.toString('utf-8');
-  });
-  asana_response.on('end', function() {
-    // convert JSON string to JSON
-    json_data = JSON.parse(data);
-    // Note that json_data.data is returned because asana api data always has a 'data' property which
-    // refers to the data.
+    req.on('error', function(err) {
+      console.log(err);
+    });
+    req.end();
 
-    //Need some error handling here - sometimes json_data.data will be "Error"
-    if (json_data["errors"] !== undefined) {
-      response.send(json_data);
+  }
+
+  var processResponse = function (asana_response) {
+    console.log("inside processResponse");
+    // Takes a response object from asana and listens for data from it
+    // Also takes a node server response object
+    // that has functions send() and json() which are called depending
+    // on whether or not there are errors from asana.
+    var data = '';
+    asana_response.on('data', function(chunk) {
+      data += chunk.toString('utf-8');
+    });
+    asana_response.on('end', function() {
+      // convert JSON string to JSON
+      json_data = JSON.parse(data);
+      // Note that json_data.data is returned because asana api data always has a 'data' property which
+      // refers to the data.
+      that.emit("dataRecieved", json_data);
+
+    });
+  }
+
+  var processData = function(data) {
+    console.log("inside sendData");
+    if (data["errors"] !== undefined) {
+      that.emit("apiError", data["errors"]);
     } else {
-      response.json(json_data["data"]);
+      that.emit("dataProcessed", data["data"]);
     }
-  });
+  }
+
+  var saveData = function (data) {
+    console.log("inside saveData");
+    console.log(data);
+    data.forEach(function(project) {
+      db.projects.save(project, function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+    })
+    // Need some error handling
+    that.emit("dataSaved");
+    console.log("Saved data");
+  }
+
+  var handleApiError = function(message) {
+    console.log(message);
+  }
+
+  var getData = function() {
+    db.projects.find(function(err, docs) {
+      console.log(docs);
+    });
+  }
+
+  this.on("dataRequest", getAPIResponse);
+  this.on("asanaResponse", processResponse);
+  this.on("dataRecieved", processData);
+  this.on("apiError", handleApiError);
+  this.on("dataProcessed", saveData);
+  this.on("dataSaved", getData);
+
 }
 
-function createJSONResponder(res) {
-  // Takes a response object, binds res.json to the responder object.
-  // Then it partially applies processResponse with the
-  // bound res.json as a callback. In this way, a response from the asana api
-  // can be passed to JSONResponder and the function will write out
-  // a response to the client with the JSON data.
-  // bound_res_JSON = _.bind(res.json, res);
-  JSONResponder = processResponse.partial(undefined, res);
-  return JSONResponder;
-}
+util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/:path', function(req, res) {
   // bind the JSON function to res, so that when it is passed,
   // the JSON function is called in the right context
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter();
+  dataGetter.getData('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+
+  // var JSONResponder = createJSONResponder(res);
+  // getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
 });
 
 app.get('/tags/:id', function(req, res) {
@@ -268,8 +312,8 @@ http.createServer(app).listen(app.get('port'), function(){
 
 console.log("App in server.js: " + app);
 module.exports = app;
-module.exports.getAPIResponse = getAPIResponse;
-module.exports.processResponse = processResponse;
+// module.exports.getAPIResponse = getAPIResponse;
+// module.exports.processResponse = processResponse;
 
 
 
