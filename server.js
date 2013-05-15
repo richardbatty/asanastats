@@ -36,28 +36,17 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-Function.prototype.partial = function(){
-    var fn = this 
-      , args = Array.prototype.slice.call(arguments);
-    return function(){
-      var arg = 0;
-      // Note that here 'arguments' refers to the arguments for the inner function
-      // It is a different set of arguments from one above that is turned into an array
-      // and assigned to 'args'
-      for ( var i = 0; i < args.length && arg < arguments.length; i++ )
-        if ( args[i] === undefined )
-          args[i] = arguments[arg++];
-      return fn.apply(this, args);
-    };
-  };
+var DataGetter = function(options) {
+  var that = this 
+    , path = options.path
+    , auth = options.auth
+    , collection = options.collection
+    ;
 
-var DataGetter = function() {
-  
-  var that = this;
 
   events.EventEmitter.call(this)
 
-  this.getData = function(path, auth) {
+  this.getAndSaveData = function(path, auth) {
     that.emit("dataRequest", path, auth);
   }
 
@@ -88,7 +77,6 @@ var DataGetter = function() {
   }
 
   var processResponse = function (asana_response) {
-    console.log("inside processResponse");
     // Takes a response object from asana and listens for data from it
     // Also takes a node server response object
     // that has functions send() and json() which are called depending
@@ -100,8 +88,6 @@ var DataGetter = function() {
     asana_response.on('end', function() {
       // convert JSON string to JSON
       json_data = JSON.parse(data);
-      // Note that json_data.data is returned because asana api data always has a 'data' property which
-      // refers to the data.
       that.emit("dataRecieved", json_data);
 
     });
