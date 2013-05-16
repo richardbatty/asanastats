@@ -120,15 +120,9 @@ var DataGetter = function(auth) {
 
   }
 
-  var handleApiError = function(message) {
-    console.log(message);
-  }
-
   this.on("dataRequest", getAPIResponse);
   this.on("asanaResponse", processResponse);
   this.on("dataRecieved", processData);
-  this.on("apiError", handleApiError);
-  this.on("gotData", console.log);
 
 }
 
@@ -143,7 +137,13 @@ app.get('/:path', function(req, res) {
     , relative_path = '/' + req.params.path
     ;
 
+  send_response = _.bind(res.send, res);
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response)
+  
   dataGetter.getData(relative_path);
+
 });
 
 app.get('/tags/:id', function(req, res) {
