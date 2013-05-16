@@ -5,7 +5,7 @@ var app = app || {};
   var Projects = Backbone.Collection.extend({
 
     model: app.Project,
-    url: '/projects'
+    url: '/data/projects'
 
   });
 
