@@ -51,17 +51,30 @@ Function.prototype.partial = function(){
     };
   };
 
-var DataGetter = function() {
+var DataGetter = function(auth) {
+  // Should I pass around variables like path and auth, or should I save them
+  // as variables to the object - e.g. this.path = path, this.auth = auth
+
+  // When the user logs on, you create a user-specific data-getter object
+  // by passing in the auth and the root asana path (app.asana.com/api/1.0)
+  // then all that needs to be passed to getAndSaveData is the specific path needed
+
+  // Also, take out saving and leave this data getter as only getting data
+  // When it's done it should emit a done even and then something else can 
+  // take the data and push it to backbone. Also take out saving to the database as 
+  // it's not necessary
+
+  // Should I create a seperate DataGetter object for each path or auth?
   
+ events.EventEmitter.call(this)
+
   var that = this;
 
-  events.EventEmitter.call(this)
-
-  this.getAndSaveData = function(path, auth) {
+  this.getData = function(path) {
     that.emit("dataRequest", path, auth);
   }
 
-  var getAPIResponse = function (path, auth) {
+  var getAPIResponse = function (path) {
     console.log("inside getAPIResponse");
     // Takes a path for app.asana.com, an authorisation code, and a callback that operates
     // on the asana response object.
@@ -109,43 +122,23 @@ var DataGetter = function() {
     if (data["errors"] !== undefined) {
       that.emit("apiError", data["errors"]);
     } else {
-      that.emit("dataProcessed", data["data"]);
+      that.emit("gotData", data["data"]);
     }
-  }
-
-  var saveData = function (data) {
-    console.log("inside saveData");
-    console.log(data);
-    data.forEach(function(project) {
-      db.projects.save(project, function(err) {
-        if (err) {
-          console.log(err);
-        }
-      });
-    })
-    // Need some error handling
-    that.emit("dataSaved");
-    console.log("Saved data");
   }
 
   var handleApiError = function(message) {
     console.log(message);
   }
 
-  var getData = function() {
-    db.projects.find(function(err, docs) {
-      console.log(docs);
-    });
-  }
-
   this.on("dataRequest", getAPIResponse);
   this.on("asanaResponse", processResponse);
   this.on("dataRecieved", processData);
   this.on("apiError", handleApiError);
-  this.on("dataProcessed", saveData);
-  this.on("dataSaved", getData);
+  this.on("gotData", console.log);
 
 }
+
+
 
 util.inherits(DataGetter, events.EventEmitter);
 
@@ -154,8 +147,8 @@ app.get('/:path', function(req, res) {
   // bind the JSON function to res, so that when it is passed,
   // the JSON function is called in the right context
 
-  var dataGetter = new DataGetter();
-  dataGetter.getAndSaveData('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+  dataGetter.getData('/api/1.0/' + req.params.path);
 
   // var JSONResponder = createJSONResponder(res);
   // getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
@@ -309,6 +302,7 @@ http.createServer(app).listen(app.get('port'), function(){
 
 console.log("App in server.js: " + app);
 module.exports = app;
+module.exports.DataGetter = DataGetter;
 // module.exports.getAPIResponse = getAPIResponse;
 // module.exports.processResponse = processResponse;
 
