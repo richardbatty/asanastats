@@ -52,35 +52,32 @@ Function.prototype.partial = function(){
   };
 
 var DataGetter = function(auth) {
-  // Should I pass around variables like path and auth, or should I save them
-  // as variables to the object - e.g. this.path = path, this.auth = auth
+  // Constructor function
+  // Taks an auth string (a base64-endocded authorisation string)
+  // which authorises access for a particular asana user.
+  // It returns an object that can get data for that user.
 
-  // When the user logs on, you create a user-specific data-getter object
-  // by passing in the auth and the root asana path (app.asana.com/api/1.0)
-  // then all that needs to be passed to getAndSaveData is the specific path needed
-
-  // Also, take out saving and leave this data getter as only getting data
-  // When it's done it should emit a done even and then something else can 
-  // take the data and push it to backbone. Also take out saving to the database as 
-  // it's not necessary
-
-  // Should I create a seperate DataGetter object for each path or auth?
+  // The public method is .getData, which takes a relative path, 
+  // e.g. /projects or /tasks/2034052. When the data is got, 
+  // a 'gotData' event is fired, with the array of objects passed.
   
- events.EventEmitter.call(this)
+  events.EventEmitter.call(this)
 
   var that = this;
 
-  this.getData = function(path) {
-    that.emit("dataRequest", path, auth);
+  this.getData = function(relative_path) {
+    // The public method for this constructor. Takes the relative path
+    // used to specify which asana data get.
+    // Causes a chain of functions to be fired, ending in
+    // a 'gotData' event being emitted, along with the data.
+    that.emit("dataRequest", relative_path);
   }
 
-  var getAPIResponse = function (path) {
-    console.log("inside getAPIResponse");
-    // Takes a path for app.asana.com, an authorisation code, and a callback that operates
-    // on the asana response object.
+  var getAPIResponse = function (relative_path) {
+
     var options = {
           hostname: 'app.asana.com',
-          path: path,
+          path: '/api/1.0' + relative_path,
           method: 'GET',
           // Note that the auth variable is automatically converted into base64
           // If you convert it before assigning it to auth then it'll get 
@@ -88,8 +85,6 @@ var DataGetter = function(auth) {
           auth: auth
         }
       , req = https.request(options, function(asana_response) {
-          console.log("inside https.request callback");
-          console.log(that);
           that.emit("asanaResponse", asana_response)
         });
 
@@ -101,10 +96,7 @@ var DataGetter = function(auth) {
   }
 
   var processResponse = function (asana_response) {
-    // Takes a response object from asana and listens for data from it
-    // Also takes a node server response object
-    // that has functions send() and json() which are called depending
-    // on whether or not there are errors from asana.
+
     var data = '';
     asana_response.on('data', function(chunk) {
       data += chunk.toString('utf-8');
@@ -115,15 +107,17 @@ var DataGetter = function(auth) {
       that.emit("dataRecieved", json_data);
 
     });
+
   }
 
   var processData = function(data) {
-    console.log("inside sendData");
+
     if (data["errors"] !== undefined) {
       that.emit("apiError", data["errors"]);
     } else {
       that.emit("gotData", data["data"]);
     }
+
   }
 
   var handleApiError = function(message) {
@@ -144,14 +138,12 @@ util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/:path', function(req, res) {
-  // bind the JSON function to res, so that when it is passed,
-  // the JSON function is called in the right context
 
-  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
-  dataGetter.getData('/api/1.0/' + req.params.path);
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/' + req.params.path
+    ;
 
-  // var JSONResponder = createJSONResponder(res);
-  // getAPIResponse('/api/1.0/' + req.params.path, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+  dataGetter.getData(relative_path);
 });
 
 app.get('/tags/:id', function(req, res) {
