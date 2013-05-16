@@ -38,7 +38,7 @@ if ('development' == app.get('env')) {
 
 var DataGetter = function(auth) {
   // Constructor function
-  // Taks an auth string (a base64-endocded authorisation string)
+  // Taks an auth string (a base64-encoded authorisation string)
   // which authorises access for a particular asana user.
   // It returns an object that can get data for that user.
 
@@ -51,8 +51,8 @@ var DataGetter = function(auth) {
   var that = this;
 
   this.getData = function(relative_path) {
-    // The public method for this constructor. Takes the relative path
-    // used to specify which asana data get.
+    // The public method for this constructor. Takes a relative path
+    // like '/projects' used to specify which asana data get.
     // Causes a chain of functions to be fired, ending in
     // a 'gotData' event being emitted, along with the data.
     that.emit("dataRequest", relative_path);
@@ -124,6 +124,9 @@ app.get('/data/*', function(req, res) {
   // Listen for '/data/*' rather than just '/*' because needs client needs to be able
   // to access files like /js/main.js without going through this listener.
 
+  // Weakness: I'm creating a new dataGetter every time someone makes a request. That means
+  // if you reaload the page over and over more and more dataGetters are made. Will wait until
+  // we have logins (or entering auth on the page) until I change this.
   var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
     // relative_path equals everything after '/data'.
     , relative_path = req.path.substring(5)
@@ -137,46 +140,6 @@ app.get('/data/*', function(req, res) {
   dataGetter.getData(relative_path);
 
 });
-
-
-/*
-List of things to get from asana:
-/users - all userse in all workspaces that the authenticated
-user can access
-
-/user/user-id for individual users
-
-/workspaces/workspace-id/users - all users in a single workspace
-or organisation
-
-POST /tasks - create a new task
-
-POST /workspaces/workspace-id/tasks 
-
-GET /tasks/task-id - show a specific task
-
-PUT /tasks/task-id - update specific existing task
-
-DELETE /tasks/task-id - delete a specific existing task
-
-GET /tasks
-GET /projects/project-id/tasks
-GET /workspaces/workspace-id/tasks
-
-
-GET /tasks/task-id/subtasks
-POST /tasks
-POST /tasks/parent-id/subtasks
-POST /tasks/task-id/setParent
-
-GET /tasks/task-id/stories - get a series of stories associated 
-with the task - e.g. comments and actions performed on it
-
-etc - see documentation
-
-*/
-
-
 
 
 http.createServer(app).listen(app.get('port'), function(){
