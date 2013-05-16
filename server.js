@@ -126,49 +126,92 @@ var DataGetter = function(auth) {
 
 }
 
-
-
 util.inherits(DataGetter, events.EventEmitter);
+
 
 // REST api
 app.get('/:path', function(req, res) {
 
   var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
     , relative_path = '/' + req.params.path
+    , send_response = _.bind(res.send, res)
     ;
 
-  send_response = _.bind(res.send, res);
-
   dataGetter.on("gotData", send_response);
-  dataGetter.on("apiError", send_response)
-  
+  dataGetter.on("apiError", send_response);
+
   dataGetter.getData(relative_path);
 
 });
 
 app.get('/tags/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tags/' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tags/:id/tasks', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tags/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tags/' + req.params.id + '/tasks'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/users/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/users/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/users/' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/workspaces/:id/users', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/users', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/workspaces/' + req.params.id + '/users'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/workspaces/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/workspaces/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/workspaces/' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/workspaces/:id/tasks', function(req, res) {
@@ -181,63 +224,171 @@ app.get('/workspaces/:id/tasks', function(req, res) {
   // workspace. You can specify assignee, but then you must additionally 
   // filter by workspace.""
   // "So your choices for filtering tasks are either by project or by BOTH assignee and workspace.""
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/workspaces/' + req.params.id + '/tasks'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/workspaces/:id/tags', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/workspaces/' + req.params.id + '/tags'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/workspaces/:id/projects', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/workspaces/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/workspaces' + req.params.id + '/projects'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/projects/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/projects/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/projects/' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/projects/:id/tasks', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/projects/' + req.params.id + '/tasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/projects/' + req.params.id + '/tasks'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/projects/:id/stories', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/projects/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/projects/' + req.params.id + '/stories'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tasks/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tasks/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tasks' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tasks/:id/subtasks', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/subtasks', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tasks' + req.params.id + '/subtasks'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tasks/:id/stories', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/stories', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tasks/' + req.params.id + '/stories'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tasks/:id/projects', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/projects', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tasks' + req.params.id + '/projects'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/tasks/:id/tags', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/tasks/' + req.params.id + '/tags', 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/tasks/' + req.params.id + '/tags'
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 app.get('/stories/:id', function(req, res) {
-  var JSONResponder = createJSONResponder(res);
-  getAPIResponse('/api/1.0/stories/' + req.params.id, 'ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', JSONResponder);
+
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
+    , relative_path = '/stories/' + req.params.id
+    , send_response = _.bind(res.send, res)
+    ;
+
+  dataGetter.on("gotData", send_response);
+  dataGetter.on("apiError", send_response);
+
+  dataGetter.getData(relative_path);
+
 });
 
 
