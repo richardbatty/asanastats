@@ -116,7 +116,15 @@ util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/', function(req, res){
-  res.render('index');
+  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+  var workspaces_list = null;
+  dataGetter.on("gotData", function(data) {
+    console.log(JSON.stringify(data));
+    res.render('index', {
+      workspaces_object: JSON.stringify(data)
+    });
+  });
+  dataGetter.getData('/workspaces');
   //res.sendfile('./public/static/index.html')
 });
 

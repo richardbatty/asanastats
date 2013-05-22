@@ -21,6 +21,9 @@ html
     script(src='js/app.js')
     script#project-template(type='text/template')
       <p><%=name%></p>
+    script
+      var workspaces_object = !{workspaces_object}
+      console.log(workspaces_object);
   body
     h1 Asanastats wohoow
     section#projects-list
