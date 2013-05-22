@@ -58,6 +58,34 @@ var DataGetter = function(auth, relative_path) {
     that.emit("dataRequest");
   }
 
+  this.getDeepData = function() {
+    // This function uses the list of item-references and gets the actual data
+    // for each reference. For example, /users gives us references to the
+    // users available, but doesn't give us detailed data about them. This function
+    // takes the list from /users (or /workspaces etc) and then goes to each of the 
+    // /users/:id to get more detailed data.
+    var deep_list = [];
+    that.on("gotData", function(data) {
+      data.forEach(function(reference) {
+        var object_getter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', relative_path + '/' + reference.id);
+
+        // Set up a listener for each reference
+        object_getter.on("gotData", function(item) {
+          deep_list.push(item);
+
+          // If the deep list has got all the deep data then emit "gotDeepData"
+          if (deep_list.length === data.length) {
+            that.emit("gotDeepData", deep_list);
+          }
+        });
+
+        // Get the data for each reference.
+        object_getter.getData();
+      });
+    })
+    that.emit("dataRequest");
+  }
+
   var getAPIResponse = function () {
 
     var options = {
@@ -114,6 +142,7 @@ var DataGetter = function(auth, relative_path) {
 util.inherits(DataGetter, events.EventEmitter);
 
 
+
 // REST api
 app.get('/', function(req, res){
   var workspacesDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/workspaces')
@@ -124,7 +153,7 @@ app.get('/', function(req, res){
     , projects_object = null
     , count = 0;
 
-  workspacesDataGetter.on("gotData", function(workspaces_data) {
+  workspacesDataGetter.on("gotDeepData", function(workspaces_data) {
     workspaces_object = JSON.stringify(workspaces_data);
     count++;
     if (count > 2) {
@@ -137,7 +166,7 @@ app.get('/', function(req, res){
 
   });
 
-  usersDataGetter.on("gotData", function(users_data) {
+  usersDataGetter.on("gotDeepData", function(users_data) {
     users_object = JSON.stringify(users_data);
     count++;
     if (count > 2) {
@@ -149,7 +178,7 @@ app.get('/', function(req, res){
     }
   });
 
-  projectsDataGetter.on("gotData", function(projects_data) {
+  projectsDataGetter.on("gotDeepData", function(projects_data) {
     projects_object = JSON.stringify(projects_data);
     count++;
     if (count > 2) {
@@ -161,10 +190,9 @@ app.get('/', function(req, res){
     }
   });
 
-  workspacesDataGetter.getData();
-  usersDataGetter.getData();
-  projectsDataGetter.getData();
-  //res.sendfile('./public/static/index.html')
+  workspacesDataGetter.getDeepData();
+  usersDataGetter.getDeepData();
+  projectsDataGetter.getDeepData();
 });
 
 
