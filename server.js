@@ -36,7 +36,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-var DataGetter = function(auth) {
+var DataGetter = function(auth, relative_path) {
   // Constructor function
   // Taks an auth string (a base64-encoded authorisation string)
   // which authorises access for a particular asana user.
@@ -50,15 +50,15 @@ var DataGetter = function(auth) {
 
   var that = this;
 
-  this.getData = function(relative_path) {
+  this.getData = function() {
     // The public method for this constructor. Takes a relative path
     // like '/projects' used to specify which asana data get.
     // Causes a chain of functions to be fired, ending in
     // a 'gotData' event being emitted, along with the data.
-    that.emit("dataRequest", relative_path);
+    that.emit("dataRequest");
   }
 
-  var getAPIResponse = function (relative_path) {
+  var getAPIResponse = function () {
 
     var options = {
           hostname: 'app.asana.com',
@@ -116,15 +116,15 @@ util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/', function(req, res){
-  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:');
+  var workspacesDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/workspaces');
   var workspaces_list = null;
-  dataGetter.on("gotData", function(data) {
+  workspacesDataGetter.on("gotData", function(data) {
     console.log(JSON.stringify(data));
     res.render('index', {
       workspaces_object: JSON.stringify(data)
     });
   });
-  dataGetter.getData('/workspaces');
+  workspacesDataGetter.getData();
   //res.sendfile('./public/static/index.html')
 });
 
@@ -136,9 +136,10 @@ app.get('/data/*', function(req, res) {
   // Weakness: I'm creating a new dataGetter every time someone makes a request. That means
   // if you reaload the page over and over more and more dataGetters are made. Will wait until
   // we have logins (or entering auth on the page) until I change this.
-  var dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:')
-    // relative_path equals everything after '/data'.
-    , relative_path = req.path.substring(5)
+
+  // relative_path equals everything after '/data'.
+  var relative_path = req.path.substring(5)
+    , dataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', relative_path)
     , send_response = _.bind(res.send, res)
     ;
 
