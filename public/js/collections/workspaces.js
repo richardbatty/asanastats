@@ -2,15 +2,15 @@ var app = app || {};
 
 (function () {
 
-  var Users = Backbone.Collection.extend({
+  var Workspaces = Backbone.Collection.extend({
 
-    model: app.User,
-    url: '/data/users'
+    model: app.Workspace,
+    url: '/data/workspaces'
 
   });
 
-  app.users = new Users();
-  app.users.fetch({
+  app.workspaces = new Workspaces();
+  app.workspaces.fetch({
     reset: true,
     success: function() {
       console.log("success");
