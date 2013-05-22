@@ -10,8 +10,8 @@ app.AppView = Backbone.View.extend({
 
   renderUsers: function() {
     var element = $('#users-list');
-    app.users.each(function(project) {
-      var template = _.template($('#user-template').html(),  {name: project.get("name") });
+    app.users.each(function(user) {
+      var template = _.template($('#user-template').html(),  {name: user.get("name") });
       element.append( template );
     });
 
@@ -27,8 +27,8 @@ app.AppView = Backbone.View.extend({
 
   renderWorkspaces: function() {
     var element = $('#workspaces-list');
-    app.workspaces.each(function(project) {
-      var template = _.template($('#workspace-template').html(),  {name: project.get("name") });
+    app.workspaces.each(function(workspace) {
+      var template = _.template($('#workspace-template').html(),  {name: workspace.get("name") });
       element.append( template );
     });
   }
