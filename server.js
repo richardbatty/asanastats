@@ -116,7 +116,8 @@ util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/', function(req, res){
-  res.sendfile('./public/static/index.html')
+  res.render('index');
+  //res.sendfile('./public/static/index.html')
 });
 
 
