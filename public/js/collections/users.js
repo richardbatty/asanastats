@@ -1,22 +1,22 @@
 var app = app || {};
 
-(function () {
+// (function () {
 
-  var Users = Backbone.Collection.extend({
+  app.Users = Backbone.Collection.extend({
 
     model: app.User,
     url: '/data/users'
 
   });
 
-  app.users = new Users();
-  app.users.fetch({
-    reset: true,
-    success: function() {
-      console.log("success");
-    },
-    error: function() {
-      console.log("error");
-    }
-  });
-})();
+  app.users = new app.Users();
+//   app.users.fetch({
+//     reset: true,
+//     success: function() {
+//       console.log("success");
+//     },
+//     error: function() {
+//       console.log("error");
+//     }
+//   });
+// })();

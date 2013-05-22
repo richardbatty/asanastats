@@ -21,11 +21,22 @@ html
     script(src='js/app.js')
     script#project-template(type='text/template')
       <p><%=name%></p>
+    script#workspace-template(type='text/template')
+      <p><%=name%></p>
+    script#user-template(type='text/template')
+      <p><%=name%></p>
     script
-      var workspaces_object = !{workspaces_object}
-      console.log(workspaces_object);
+      $(function() {
+        app.workspaces.reset(!{workspaces_object});
+        app.users.reset(!{users_object});
+        app.projects.reset(!{projects_object});
+      });
   body
-    h1 Asanastats wohoow
+    h1 Asanastats
+    section#users-list
+      h2 Users
+    section#workspaces-list
+      h2 Workspaces
     section#projects-list
-      section
-        body
+      h2 Projects
+

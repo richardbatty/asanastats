@@ -1,22 +1,22 @@
 var app = app || {};
 
-(function () {
+// (function () {
 
-  var Workspaces = Backbone.Collection.extend({
+  app.Workspaces = Backbone.Collection.extend({
 
     model: app.Workspace,
     url: '/data/workspaces'
 
   });
 
-  app.workspaces = new Workspaces();
-  app.workspaces.fetch({
-    reset: true,
-    success: function() {
-      console.log("success");
-    },
-    error: function() {
-      console.log("error");
-    }
-  });
-})();
+  app.workspaces = new app.Workspaces();
+  // app.workspaces.fetch({
+  //   reset: true,
+  //   success: function() {
+  //     console.log("success");
+  //   },
+  //   error: function() {
+  //     console.log("error");
+  //   }
+  // });
+// })();

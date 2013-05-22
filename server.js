@@ -116,15 +116,54 @@ util.inherits(DataGetter, events.EventEmitter);
 
 // REST api
 app.get('/', function(req, res){
-  var workspacesDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/workspaces');
-  var workspaces_list = null;
-  workspacesDataGetter.on("gotData", function(data) {
-    console.log(JSON.stringify(data));
-    res.render('index', {
-      workspaces_object: JSON.stringify(data)
-    });
+  var workspacesDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/workspaces')
+    , usersDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/users')
+    , projectsDataGetter = new DataGetter('ccQkiMp.4xFjlmufvUKqnKOBEO4r9yT4:', '/projects');
+  var workpaces_object = null
+    , users_object = null
+    , projects_object = null
+    , count = 0;
+
+  workspacesDataGetter.on("gotData", function(workspaces_data) {
+    workspaces_object = JSON.stringify(workspaces_data);
+    count++;
+    if (count > 2) {
+      res.render('index', {
+       workspaces_object: workspaces_object,
+       users_object: users_object,
+       projects_object: projects_object
+     });
+    }
+
   });
+
+  usersDataGetter.on("gotData", function(users_data) {
+    users_object = JSON.stringify(users_data);
+    count++;
+    if (count > 2) {
+      res.render('index', {
+       workspaces_object: workspaces_object,
+       users_object: users_object,
+       projects_object: projects_object
+     });
+    }
+  });
+
+  projectsDataGetter.on("gotData", function(projects_data) {
+    projects_object = JSON.stringify(projects_data);
+    count++;
+    if (count > 2) {
+      res.render('index', {
+       workspaces_object: workspaces_object,
+       users_object: users_object,
+       projects_object: projects_object
+     });
+    }
+  });
+
   workspacesDataGetter.getData();
+  usersDataGetter.getData();
+  projectsDataGetter.getData();
   //res.sendfile('./public/static/index.html')
 });
 

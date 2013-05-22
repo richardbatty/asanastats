@@ -1,29 +1,35 @@
 var app = app || {};
 
 app.AppView = Backbone.View.extend({
-  el: '#projects-list',
   
   initialize: function() {
-    this.listenTo(app.projects, 'reset', this.render)
+    this.listenTo(app.projects, 'reset', this.renderProjects);
+    this.listenTo(app.users, 'reset', this.renderUsers);
+    this.listenTo(app.workspaces, 'reset', this.renderWorkspaces);
   },
 
-  render: function() {
-    var element = this.$el;
-    element.append('<h2>Users</h2>');
+  renderUsers: function() {
+    var element = $('#users-list');
     app.users.each(function(project) {
-      var template = _.template($('#project-template').html(),  {name: project.get("name") });
+      var template = _.template($('#user-template').html(),  {name: project.get("name") });
       element.append( template );
     });
-    element.append('<h2>Workspaces</h2>');
-    app.workspaces.each(function(project) {
-      var template = _.template($('#project-template').html(),  {name: project.get("name") });
-      element.append( template );
-    });
-    element.append('<h2>Projects</h2>');
+
+  },
+
+  renderProjects: function() {
+    var element = $('#projects-list');
     app.projects.each(function(project) {
       var template = _.template($('#project-template').html(),  {name: project.get("name") });
       element.append( template );
     });
+  },
 
+  renderWorkspaces: function() {
+    var element = $('#workspaces-list');
+    app.workspaces.each(function(project) {
+      var template = _.template($('#workspace-template').html(),  {name: project.get("name") });
+      element.append( template );
+    });
   }
 });
