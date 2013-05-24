@@ -22,14 +22,15 @@ html
     script#project-template(type='text/template')
       <p><%=name%></p>
     script#workspace-template(type='text/template')
-      <p><%=name%></p>
+      <h2><%=name%></h2>
     script#user-template(type='text/template')
       <p><%=name%></p>
     script
       $(function() {
-        app.workspaces.reset(!{workspaces_object});
         app.users.reset(!{users_object});
         app.projects.reset(!{projects_object});
+        app.workspaces.reset(!{workspaces_object});
+
       });
   body
     h1 Asanastats
@@ -38,5 +39,5 @@ html
     section#workspaces-list
       h2 Workspaces
     section#projects-list
-      h2 Projects
+      h2 Full projects list
 

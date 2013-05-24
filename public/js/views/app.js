@@ -28,8 +28,13 @@ app.AppView = Backbone.View.extend({
   renderWorkspaces: function() {
     var element = $('#workspaces-list');
     app.workspaces.each(function(workspace) {
-      var template = _.template($('#workspace-template').html(),  {name: workspace.get("name") });
-      element.append( template );
+      var workspace_template = _.template($('#workspace-template').html(),  { name: workspace.get("name") });
+      element.append( workspace_template );
+      workspace_projects = workspace.projects();
+      workspace_projects.forEach(function(project) {
+        var project_template = _.template($('#project-template').html(), { name: project.get("name") });
+        element.append( project_template );
+      })
     });
   }
 });
