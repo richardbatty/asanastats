@@ -27,9 +27,9 @@ html
       <p><%=name%></p>
     script
       $(function() {
+        app.workspaces.reset(!{workspaces_object});
         app.users.reset(!{users_object});
         app.projects.reset(!{projects_object});
-        app.workspaces.reset(!{workspaces_object});
 
       });
   body
